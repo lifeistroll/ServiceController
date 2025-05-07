@@ -1,18 +1,32 @@
-## Getting Started
+# Windows Service Controller  
+*A simple Java GUI to manage Windows services*  
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+I made this out of boredom  
 
-## Folder Structure
+## Features  
+- Start/Stop/Restart Windows services   
 
-The workspace contains two folders by default, where:
+## Prerequisites  
+- Windows OS  
+- Java Runtime Environment (JRE) 8+  
+- Administrator privileges (to control services)  
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+## Usage  
+1. Clone/download this repository  
+2. Double-click `App.java` to run (or compile manually)  
+3. The app will show:  
+   - Service names on the left  
+   - Status indicators (●)  
+   - Control buttons (Start/Stop/Restart)  
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+### Default Services  
+- (Add your own services by editing the `SERVICE_NAMES` array)  
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
-
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+## How to Add More Services  
+Edit the code at line:  
+```java
+private static final String[] SERVICE_NAMES = {
+        "BcastDVRUserService_e27cf",
+        "AnotherService",  // ← Add your services here
+        "ThirdService"     // ← And here
+};
