@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 
 public class App {
     private static final String[] SERVICE_NAMES = {
-            "BcastDVRUserService_e27cf",
+            "FirstService",
             "AnotherService",
             "ThirdService"
     };
