@@ -28,14 +28,15 @@ public class App {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 180);
         frame.setLayout(new BorderLayout());
+        frame.setResizable(false);
         frame.getContentPane().setBackground(Color.WHITE);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        mainPanel.setBackground(Color.WHITE);
+        mainPanel.setBackground(new Color(240, 240, 240));
 
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        headerPanel.setBackground(Color.WHITE);
+        headerPanel.setBackground(new Color(240, 240, 240));
 
         JLabel titleLabel = new JLabel("Service Control Panel");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
@@ -44,7 +45,7 @@ public class App {
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
         JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 20));
-        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBackground(new Color(240, 240, 240));
 
         JLabel nameLabel = new JLabel(getDisplayName(SERVICE_NAME));
         nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -56,18 +57,18 @@ public class App {
         StatusCircle statusCircle = new StatusCircle();
 
         startButton.addActionListener((ActionEvent e) -> {
-            executeCommand(new String[] { "cmd.exe", "/c", "net", "start", SERVICE_NAME });
+            executeCommand(new String[] { "cmd.exe", "/c", "sc", "start", SERVICE_NAME });
             updateStatus(statusCircle);
         });
 
         stopButton.addActionListener((ActionEvent e) -> {
-            executeCommand(new String[] { "cmd.exe", "/c", "net", "stop", SERVICE_NAME });
+            executeCommand(new String[] { "cmd.exe", "/c", "sc", "stop", SERVICE_NAME });
             updateStatus(statusCircle);
         });
 
         restartButton.addActionListener((ActionEvent e) -> {
-            executeCommand(new String[] { "cmd.exe", "/c", "net", "stop", SERVICE_NAME });
-            executeCommand(new String[] { "cmd.exe", "/c", "net", "start", SERVICE_NAME });
+            executeCommand(new String[] { "cmd.exe", "/c", "sc", "stop", SERVICE_NAME });
+            executeCommand(new String[] { "cmd.exe", "/c", "sc", "start", SERVICE_NAME });
             updateStatus(statusCircle);
         });
 
@@ -81,7 +82,7 @@ public class App {
         frame.add(mainPanel);
         frame.setVisible(true);
 
-        updateStatus(statusCircle); // Initial status
+        updateStatus(statusCircle);
     }
 
     private static JButton createStyledButton(String text, Color baseColor) {
@@ -168,7 +169,7 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return serviceName; // fallback
+        return serviceName;
     }
 
     static class StatusCircle extends JPanel {
