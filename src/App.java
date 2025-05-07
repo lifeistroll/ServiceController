@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Scanner;
 
 public class App {
@@ -6,37 +8,46 @@ public class App {
 
         Scanner scanner = new Scanner(System.in);
 
-        String[] service_start = { "cmd.exe", "/c", "sc", "start", "SERVICE_NAME" };
-
-        String[] service_stop = { "cmd.exe", "/c", "sc", "stop", "SERVICE_NAME" };
-
-        String[] service_check = { "cmd.exe", "/c", "sc", "query", "SERVICE_NAME", "|", "find", "/C",
-                "\"RUNNING\"" };
+        System.out.println("choose:");
+        System.out.println("1. start");
+        System.out.println("2. stop");
+        System.out.println("3. check");
 
         int user_choose = scanner.nextInt();
+        scanner.close();
 
-        if (user_choose == 1) {
-            try {
-                Runtime.getRuntime().exec(service_start);
-            } catch (IOException e) {
-                e.printStackTrace();
+        try {
+            switch (user_choose) {
+                case 1:
+                    executeCommand(new String[] { "cmd.exe", "/c", "net", "start", "BcastDVRUserService_e27cf" });
+                    break;
+                case 2:
+                    executeCommand(new String[] { "cmd.exe", "/c", "net", "stop", "BcastDVRUserService_e27cf" });
+                    break;
+                case 3:
+                    executeCommand(new String[] { "cmd.exe", "/c", "sc", "query", "BcastDVRUserService_e27cf" });
+                    break;
+                default:
+                    System.out.println("choooooose");
             }
-        } else if (user_choose == 2) {
-            try {
-                Runtime.getRuntime().exec(service_stop);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else if (user_choose == 3) {
-            try {
-                Runtime.getRuntime().exec(service_check);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            System.out.println("choose");
+        } catch (Exception e) {
+            System.err.println("error: " + e.getMessage());
+        }
+    }
+
+    private static void executeCommand(String[] command) throws IOException, InterruptedException {
+        Process process = Runtime.getRuntime().exec(command);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            System.out.println(line);
         }
 
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            System.err.println("errot " + exitCode);
+        }
     }
 
 }
