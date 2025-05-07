@@ -26,7 +26,7 @@ I made this out of boredom
 Edit the code at line:  
 ```java
 private static final String[] SERVICE_NAMES = {
-        "BcastDVRUserService_e27cf",
-        "AnotherService",  // ← Add your services here
+        "FirstService",    // ← Add your services here
+        "AnotherService",  // ← Add here
         "ThirdService"     // ← And here
 };
