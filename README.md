@@ -1,5 +1,4 @@
 # Windows Service Controller  
-*A simple Java GUI to manage Windows services*  
 
 I made this out of boredom  
 
