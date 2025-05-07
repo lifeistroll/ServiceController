@@ -1,8 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -117,24 +115,6 @@ public class App {
         button.setForeground(Color.BLACK);
         button.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        Color hoverColor = baseColor.brighter();
-
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent evt) {
-                button.setBackground(hoverColor);
-                button.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(new Color(0, 0, 0, 30), 1),
-                        BorderFactory.createEmptyBorder(8, 15, 8, 15)));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent evt) {
-                button.setBackground(baseColor);
-                button.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-            }
-        });
 
         return button;
     }
