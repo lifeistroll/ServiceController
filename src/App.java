@@ -8,10 +8,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class App {
-    private static final String SERVICE_NAME = "BcastDVRUserService_e27cf";
-    private static JButton startButton;
-    private static JButton stopButton;
-    private static JButton restartButton;
+    private static final String[] SERVICE_NAMES = {
+            "BcastDVRUserService_e27cf",
+            "AnotherService",
+            "ThirdService"
+    };
+    private static JButton[][] serviceButtons;
+    private static StatusCircle[] statusCircles;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(App::createAndShowGUI);
@@ -26,7 +29,7 @@ public class App {
 
         JFrame frame = new JFrame("Service Controller");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 180);
+        frame.setSize(600, 300);
         frame.setLayout(new BorderLayout());
         frame.setResizable(false);
         frame.getContentPane().setBackground(Color.WHITE);
@@ -44,53 +47,74 @@ public class App {
 
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
-        JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 20));
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBackground(new Color(240, 240, 240));
 
-        JLabel nameLabel = new JLabel(getDisplayName(SERVICE_NAME));
-        nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        serviceButtons = new JButton[SERVICE_NAMES.length][3];
+        statusCircles = new StatusCircle[SERVICE_NAMES.length];
 
-        startButton = createStyledButton("Start", new Color(0, 120, 215));
-        stopButton = createStyledButton("Stop", new Color(0, 120, 215));
-        restartButton = createStyledButton("Restart", new Color(0, 120, 215));
+        for (int i = 0; i < SERVICE_NAMES.length; i++) {
+            JPanel servicePanel = new JPanel(new BorderLayout());
+            servicePanel.setBackground(new Color(240, 240, 240));
+            servicePanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 
-        StatusCircle statusCircle = new StatusCircle();
+            JLabel nameLabel = new JLabel(getDisplayName(SERVICE_NAMES[i]));
+            nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        startButton.addActionListener((ActionEvent e) -> {
-            executeCommand(new String[] { "cmd.exe", "/c", "sc", "start", SERVICE_NAME });
-            updateStatus(statusCircle);
-        });
+            JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+            controlPanel.setBackground(new Color(240, 240, 240));
 
-        stopButton.addActionListener((ActionEvent e) -> {
-            executeCommand(new String[] { "cmd.exe", "/c", "sc", "stop", SERVICE_NAME });
-            updateStatus(statusCircle);
-        });
+            serviceButtons[i][0] = createStyledButton("Start", new Color(200, 200, 200), i);
+            serviceButtons[i][1] = createStyledButton("Stop", new Color(200, 200, 200), i);
+            serviceButtons[i][2] = createStyledButton("Restart", new Color(200, 200, 200), i);
 
-        restartButton.addActionListener((ActionEvent e) -> {
-            executeCommand(new String[] { "cmd.exe", "/c", "sc", "stop", SERVICE_NAME });
-            executeCommand(new String[] { "cmd.exe", "/c", "sc", "start", SERVICE_NAME });
-            updateStatus(statusCircle);
-        });
+            statusCircles[i] = new StatusCircle();
 
-        contentPanel.add(nameLabel);
-        contentPanel.add(startButton);
-        contentPanel.add(stopButton);
-        contentPanel.add(restartButton);
-        contentPanel.add(statusCircle);
+            final int serviceIndex = i;
+            serviceButtons[i][0].addActionListener((ActionEvent e) -> {
+                executeCommand(new String[] { "cmd.exe", "/c", "sc", "start", SERVICE_NAMES[serviceIndex] }, () -> {
+                    updateStatus(statusCircles[serviceIndex], serviceIndex);
+                });
+            });
+
+            serviceButtons[i][1].addActionListener((ActionEvent e) -> {
+                executeCommand(new String[] { "cmd.exe", "/c", "sc", "stop", SERVICE_NAMES[serviceIndex] }, () -> {
+                    updateStatus(statusCircles[serviceIndex], serviceIndex);
+                });
+            });
+
+            serviceButtons[i][2].addActionListener((ActionEvent e) -> {
+                executeCommand(new String[] { "cmd.exe", "/c", "sc", "stop", SERVICE_NAMES[serviceIndex] }, () -> {
+                    executeCommand(new String[] { "cmd.exe", "/c", "sc", "start", SERVICE_NAMES[serviceIndex] }, () -> {
+                        updateStatus(statusCircles[serviceIndex], serviceIndex);
+                    });
+                });
+            });
+
+            controlPanel.add(serviceButtons[i][0]);
+            controlPanel.add(serviceButtons[i][1]);
+            controlPanel.add(serviceButtons[i][2]);
+            controlPanel.add(statusCircles[i]);
+
+            servicePanel.add(nameLabel, BorderLayout.WEST);
+            servicePanel.add(controlPanel, BorderLayout.EAST);
+
+            contentPanel.add(servicePanel);
+            updateStatus(statusCircles[i], i);
+        }
 
         mainPanel.add(contentPanel, BorderLayout.CENTER);
         frame.add(mainPanel);
         frame.setVisible(true);
-
-        updateStatus(statusCircle);
     }
 
-    private static JButton createStyledButton(String text, Color baseColor) {
+    private static JButton createStyledButton(String text, Color baseColor, int serviceIndex) {
         JButton button = new JButton(text);
         button.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         button.setFocusPainted(false);
         button.setBackground(baseColor);
-        button.setForeground(Color.WHITE);
+        button.setForeground(Color.BLACK);
         button.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -115,23 +139,24 @@ public class App {
         return button;
     }
 
-    private static void executeCommand(String[] command) {
+    private static void executeCommand(String[] command, Runnable callback) {
         new Thread(() -> {
             try {
                 Process process = Runtime.getRuntime().exec(command);
                 process.waitFor();
+                SwingUtilities.invokeLater(callback);
             } catch (IOException | InterruptedException ex) {
                 ex.printStackTrace();
             }
         }).start();
     }
 
-    private static void updateStatus(StatusCircle circle) {
+    private static void updateStatus(StatusCircle circle, int serviceIndex) {
         new Thread(() -> {
             boolean isRunning = false;
             try {
                 Process process = Runtime.getRuntime()
-                        .exec(new String[] { "cmd.exe", "/c", "sc", "query", SERVICE_NAME });
+                        .exec(new String[] { "cmd.exe", "/c", "sc", "query", SERVICE_NAMES[serviceIndex] });
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -148,9 +173,9 @@ public class App {
             final boolean finalStatus = isRunning;
             SwingUtilities.invokeLater(() -> {
                 circle.setRunning(finalStatus);
-                startButton.setEnabled(!finalStatus);
-                stopButton.setEnabled(finalStatus);
-                restartButton.setEnabled(finalStatus);
+                serviceButtons[serviceIndex][0].setEnabled(!finalStatus);
+                serviceButtons[serviceIndex][1].setEnabled(finalStatus);
+                serviceButtons[serviceIndex][2].setEnabled(finalStatus);
             });
         }).start();
     }
